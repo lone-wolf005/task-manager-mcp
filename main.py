@@ -14,7 +14,7 @@ mcp = FastMCP(
 
 register_tools(mcp)
 
-mcp_app = mcp.http_app(path="/")
+mcp_app = mcp.http_app()
 
 app = FastAPI(lifespan=mcp_app.lifespan)
 
@@ -29,7 +29,7 @@ async def oauth_metadata():
             AUTHORIZATION_SERVER
         ],
         "bearer_methods_supported": ["header"],
-        "resource": MCP_RESOURCE_URL,
+        "resource": f"{MCP_RESOURCE_URL}/mcp",
         "resource_documentation": f"{MCP_RESOURCE_URL}/docs",
         "scopes_supported": [
             "profile:read",
@@ -41,5 +41,4 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=9000,
-        reload=True
     )
