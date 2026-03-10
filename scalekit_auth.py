@@ -24,6 +24,8 @@ class ScalekitAuth(AuthProvider):
 
         auth_header = request.headers.get("authorization")
 
+        print("Authorization:", request.headers.get("authorization"))
+
         if not auth_header:
             raise HTTPException(
                 status_code=401,

@@ -16,7 +16,10 @@ register_tools(mcp)
 
 mcp_app = mcp.http_app()
 
-app = FastAPI(lifespan=mcp_app.lifespan)
+app = FastAPI(
+    lifespan=mcp_app.lifespan,
+    redirect_slashes=False
+)
 
 app.mount("/mcp", mcp_app)
 
