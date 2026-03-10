@@ -11,6 +11,7 @@ from config import (
     MCP_RESOURCE_URL
 )
 
+
 scalekit_client = ScalekitClient(
     SCALEKIT_ENVIRONMENT_URL,
     SCALEKIT_CLIENT_ID,
@@ -19,12 +20,11 @@ scalekit_client = ScalekitClient(
 
 
 class ScalekitAuth(AuthProvider):
+    """Scalekit authentication provider for MCP server"""
 
     async def authenticate(self, request: Request):
-
+        """Authenticate incoming requests using Scalekit token validation"""
         auth_header = request.headers.get("authorization")
-
-        print("Authorization:", request.headers.get("authorization"))
 
         if not auth_header:
             raise HTTPException(
@@ -43,14 +43,11 @@ class ScalekitAuth(AuthProvider):
         )
 
         try:
-
             claims = scalekit_client.validate_token(
                 token,
                 options=options
             )
-
         except Exception as e:
-
             raise HTTPException(status_code=401, detail=str(e))
 
         return AccessToken(
@@ -61,17 +58,18 @@ class ScalekitAuth(AuthProvider):
         )
 
     async def verify_token(self, token: str):
+        """Verify a token for middleware authentication"""
         options = TokenValidationOptions(
             issuer=SCALEKIT_ENVIRONMENT_URL,
             audience=[MCP_RESOURCE_URL]
         )
-        
+
         try:
             claims = scalekit_client.validate_token(
                 token,
                 options=options
             )
-            
+
             return AccessToken(
                 token=token,
                 claims=claims,
@@ -82,3 +80,5 @@ class ScalekitAuth(AuthProvider):
             # Return None to indicate authentication failure
             # The middleware will handle this appropriately
             return None
+
+# Made with Bob
