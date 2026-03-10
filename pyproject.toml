@@ -1,0 +1,16 @@
+[project]
+name = "mcp-task-manager"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+      "fastapi",
+    "uvicorn",
+    "fastmcp",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "requests",
+    "python-dotenv",
+    "scalekit-sdk-python>=2.5.0",
+]
