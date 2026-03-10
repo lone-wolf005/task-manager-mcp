@@ -7,7 +7,8 @@ from fastapi import Request, HTTPException
 from config import (
     SCALEKIT_ENVIRONMENT_URL,
     SCALEKIT_CLIENT_ID,
-    SCALEKIT_CLIENT_SECRET
+    SCALEKIT_CLIENT_SECRET,
+    MCP_RESOURCE_URL
 )
 
 scalekit_client = ScalekitClient(
@@ -28,7 +29,7 @@ class ScalekitAuth(AuthProvider):
                 status_code=401,
                 headers={
                     "WWW-Authenticate":
-                    'Bearer resource_metadata="http://localhost:9000/.well-known/oauth-protected-resource/mcp"'
+                    f'Bearer resource_metadata="{MCP_RESOURCE_URL}/.well-known/oauth-protected-resource/mcp"',
                 }
             )
 
@@ -36,7 +37,7 @@ class ScalekitAuth(AuthProvider):
 
         options = TokenValidationOptions(
             issuer=SCALEKIT_ENVIRONMENT_URL,
-            audience=["http://localhost:9000"]
+            audience=[MCP_RESOURCE_URL]
         )
 
         try:
@@ -60,7 +61,7 @@ class ScalekitAuth(AuthProvider):
     async def verify_token(self, token: str):
         options = TokenValidationOptions(
             issuer=SCALEKIT_ENVIRONMENT_URL,
-            audience=["http://localhost:9000"]
+            audience=[MCP_RESOURCE_URL]
         )
         
         try:
