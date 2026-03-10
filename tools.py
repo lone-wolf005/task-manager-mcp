@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from functools import wraps
+from typing import Optional
 
 from fastmcp.server.dependencies import get_access_token
 
@@ -31,6 +32,9 @@ def require_permission(permission_name: str):
             if not has_permission(user_id, permission_name):
                 return "Access denied"
             
+            # Remove user_id from kwargs if it exists to avoid duplicate argument error
+            kwargs.pop('user_id', None)
+            
             return func(user_id=user_id, *args, **kwargs)
         return wrapper
     return decorator
@@ -51,7 +55,7 @@ def register_tools(mcp):
 
     @mcp.tool()
     @require_permission("notes_create")
-    def create_note(content: str, user_id: int):
+    def create_note(content: str, user_id: Optional[int] = None):
         with get_db_session() as db:
             note = Note(user_id=user_id, content=content)
             db.add(note)
@@ -60,14 +64,14 @@ def register_tools(mcp):
 
     @mcp.tool()
     @require_permission("notes_read")
-    def list_notes(user_id: int):
+    def list_notes(user_id: Optional[int] = None):
         with get_db_session() as db:
             notes = db.query(Note).filter(Note.user_id == user_id).all()
             return [n.content for n in notes]
 
     @mcp.tool()
     @require_permission("tasks_create")
-    def create_task(title: str, user_id: int):
+    def create_task(title: str, user_id: Optional[int] = None):
         with get_db_session() as db:
             task = Task(user_id=user_id, title=title)
             db.add(task)
@@ -76,26 +80,28 @@ def register_tools(mcp):
 
     @mcp.tool()
     @require_permission("tasks_read")
-    def list_tasks(user_id: int):
+    def list_tasks(user_id: Optional[int] = None):
         with get_db_session() as db:
             tasks = db.query(Task).filter(Task.user_id == user_id).all()
             return [{"title": t.title, "completed": t.completed} for t in tasks]
+    
     @mcp.tool()
     @require_permission("users_view")
-    def list_users(user_id: int):
+    def list_users(user_id: Optional[int] = None):
         with get_db_session() as db:
             users = db.query(User).all()
             return [{"id": u.id, "email": u.email} for u in users]
+    
     @mcp.tool()
     @require_permission("users_view")
-    def list_roles(user_id: int):
+    def list_roles(user_id: Optional[int] = None):
         with get_db_session() as db:
             roles = db.query(Role).all()
             return [r.name for r in roles]
 
     @mcp.tool()
     @require_permission("users_manage")
-    def assign_role(user_email: str, role_name: str, user_id: int):
+    def assign_role(user_email: str, role_name: str, user_id: Optional[int] = None):
         with get_db_session() as db:
             target_user = find_user_by_email(db, user_email)
             if not target_user:
@@ -122,9 +128,10 @@ def register_tools(mcp):
             db.commit()
 
             return f"{user_email} promoted to {role_name}"
+    
     @mcp.tool()
     @require_permission("users_manage")
-    def remove_role(user_email: str, role_name: str, user_id: int):
+    def remove_role(user_email: str, role_name: str, user_id: Optional[int] = None):
         with get_db_session() as db:
             user = find_user_by_email(db, user_email)
             if not user:
@@ -149,7 +156,7 @@ def register_tools(mcp):
 
     @mcp.tool()
     @require_permission("analytics_read")
-    def analytics(user_id: int):
+    def analytics(user_id: Optional[int] = None):
         with get_db_session() as db:
             users = db.query(User).count()
             tasks = db.query(Task).count()
