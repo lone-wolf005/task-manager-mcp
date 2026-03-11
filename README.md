@@ -73,6 +73,8 @@ The server will start on `http://localhost:9000`
 
 ### Claude Desktop
 
+#### Local Development
+
 Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
@@ -81,6 +83,24 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
     "task-manager": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "http://localhost:9000/mcp"]
+    }
+  }
+}
+```
+
+#### Remote Server (Production)
+
+To test the MCP server remotely without local installation:
+
+```json
+{
+  "mcpServers": {
+    "task-manager-mcp": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://task-manager-mcp-production.up.railway.app/mcp/"
+      ]
     }
   }
 }
