@@ -15,16 +15,19 @@ mcp = FastMCP(
 
 register_tools(mcp)
 
+# Create MCP app with trailing slash to prevent redirects
 mcp_app = mcp.http_app(path="/")
 
 
 # ---------- FASTAPI APP ----------
 app = FastAPI(lifespan=mcp_app.lifespan)
 
-app.mount("/mcp", mcp_app)
+# Mount at /mcp/ (with trailing slash) to avoid 307 redirects
+app.mount("/mcp/", mcp_app)
 
 
 # ---------- OAuth Metadata ----------
+# OAuth metadata endpoint - must be accessible without /mcp prefix
 @app.get("/.well-known/oauth-protected-resource/mcp")
 async def oauth_metadata():
     return {
@@ -47,7 +50,8 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=9000,
-        reload=True
+        reload=False,  # Disable reload to prevent session termination
+        log_level="info"
     )
 
 # Made with Bob

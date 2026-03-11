@@ -26,6 +26,8 @@ class ScalekitAuth(AuthProvider):
         """Authenticate incoming requests using Scalekit token validation"""
         auth_header = request.headers.get("authorization")
 
+        print(auth_header)
+
         if not auth_header:
             raise HTTPException(
                 status_code=401,
