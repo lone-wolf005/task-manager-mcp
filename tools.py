@@ -56,6 +56,17 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("notes_create")
     def create_note(content: str, user_id: Optional[int] = None):
+        """
+        Create a new note for the authenticated user.
+        
+        Args:
+            content: The text content of the note
+            
+        Returns:
+            Success message confirming note creation
+            
+        Permission Required: notes_create
+        """
         with get_db_session() as db:
             note = Note(user_id=user_id, content=content)
             db.add(note)
@@ -65,6 +76,14 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("notes_read")
     def list_notes(user_id: Optional[int] = None):
+        """
+        Retrieve all notes created by the authenticated user.
+        
+        Returns:
+            List of note contents
+            
+        Permission Required: notes_read
+        """
         with get_db_session() as db:
             notes = db.query(Note).filter(Note.user_id == user_id).all()
             return [n.content for n in notes]
@@ -72,6 +91,17 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("tasks_create")
     def create_task(title: str, user_id: Optional[int] = None):
+        """
+        Create a new task for the authenticated user.
+        
+        Args:
+            title: The title/description of the task
+            
+        Returns:
+            Success message confirming task creation
+            
+        Permission Required: tasks_create
+        """
         with get_db_session() as db:
             task = Task(user_id=user_id, title=title)
             db.add(task)
@@ -81,6 +111,14 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("tasks_read")
     def list_tasks(user_id: Optional[int] = None):
+        """
+        Retrieve all tasks for the authenticated user.
+        
+        Returns:
+            List of tasks with title and completion status
+            
+        Permission Required: tasks_read
+        """
         with get_db_session() as db:
             tasks = db.query(Task).filter(Task.user_id == user_id).all()
             return [{"title": t.title, "completed": t.completed} for t in tasks]
@@ -88,6 +126,14 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("users_view")
     def list_users(user_id: Optional[int] = None):
+        """
+        List all users in the system.
+        
+        Returns:
+            List of users with their ID and email
+            
+        Permission Required: users_view
+        """
         with get_db_session() as db:
             users = db.query(User).all()
             return [{"id": u.id, "email": u.email} for u in users]
@@ -95,6 +141,14 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("users_view")
     def list_roles(user_id: Optional[int] = None):
+        """
+        List all available roles in the system.
+        
+        Returns:
+            List of role names
+            
+        Permission Required: users_view
+        """
         with get_db_session() as db:
             roles = db.query(Role).all()
             return [r.name for r in roles]
@@ -102,6 +156,18 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("users_manage")
     def assign_role(user_email: str, role_name: str, user_id: Optional[int] = None):
+        """
+        Assign a role to a user. Admin only.
+        
+        Args:
+            user_email: Email address of the user to assign the role to
+            role_name: Name of the role to assign
+            
+        Returns:
+            Success message or error if user/role not found or already assigned
+            
+        Permission Required: users_manage (admin only)
+        """
         with get_db_session() as db:
             target_user = find_user_by_email(db, user_email)
             if not target_user:
@@ -132,6 +198,18 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("users_manage")
     def remove_role(user_email: str, role_name: str, user_id: Optional[int] = None):
+        """
+        Remove a role from a user. Admin only.
+        
+        Args:
+            user_email: Email address of the user to remove the role from
+            role_name: Name of the role to remove
+            
+        Returns:
+            Success message or error if user/role not found or not assigned
+            
+        Permission Required: users_manage (admin only)
+        """
         with get_db_session() as db:
             user = find_user_by_email(db, user_email)
             if not user:
@@ -158,11 +236,35 @@ def register_tools(mcp):
     @require_permission("users_manage")
     def list_users_with_roles(user_id: Optional[int] = None):
         """
-        Fetch all users with their assigned roles.
-        Only available to users with 'users_manage' permission (typically admins).
+        Fetch all users with their assigned roles. Admin only.
+        
+        This tool provides a comprehensive view of all users in the system
+        along with their role assignments, useful for user management and auditing.
         
         Returns:
-            List of dictionaries containing user information and their roles.
+            List of dictionaries, each containing:
+            - id: User's unique identifier
+            - email: User's email address
+            - scalekit_user_id: User's Scalekit authentication ID
+            - roles: List of role names assigned to the user
+            
+        Permission Required: users_manage (admin only)
+        
+        Example output:
+        [
+            {
+                "id": 1,
+                "email": "admin@example.com",
+                "scalekit_user_id": "sk_user_123",
+                "roles": ["admin", "user"]
+            },
+            {
+                "id": 2,
+                "email": "user@example.com",
+                "scalekit_user_id": "sk_user_456",
+                "roles": ["user"]
+            }
+        ]
         """
         with get_db_session() as db:
             users = db.query(User).all()
@@ -188,6 +290,16 @@ def register_tools(mcp):
     @mcp.tool()
     @require_permission("analytics_read")
     def analytics(user_id: Optional[int] = None):
+        """
+        Get system-wide analytics and statistics.
+        
+        Returns:
+            Dictionary containing:
+            - total_users: Total number of users in the system
+            - total_tasks: Total number of tasks across all users
+            
+        Permission Required: analytics_read
+        """
         with get_db_session() as db:
             users = db.query(User).count()
             tasks = db.query(Task).count()
