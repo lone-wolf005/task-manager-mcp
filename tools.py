@@ -153,6 +153,37 @@ def register_tools(mcp):
             db.commit()
 
             return f"{role_name} removed from {user_email}"
+    
+    @mcp.tool()
+    @require_permission("users_manage")
+    def list_users_with_roles(user_id: Optional[int] = None):
+        """
+        Fetch all users with their assigned roles.
+        Only available to users with 'users_manage' permission (typically admins).
+        
+        Returns:
+            List of dictionaries containing user information and their roles.
+        """
+        with get_db_session() as db:
+            users = db.query(User).all()
+            
+            result = []
+            for user in users:
+                # Query all roles for this user
+                user_roles = db.query(Role).join(
+                    UserRole, Role.id == UserRole.role_id
+                ).filter(
+                    UserRole.user_id == user.id
+                ).all()
+                
+                result.append({
+                    "id": user.id,
+                    "email": user.email,
+                    "scalekit_user_id": user.scalekit_user_id,
+                    "roles": [role.name for role in user_roles]
+                })
+            
+            return result
 
     @mcp.tool()
     @require_permission("analytics_read")
